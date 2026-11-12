@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Gemini 실측 결과 — 문지기 필터 24건</title>
+    <meta name="description" content="구글 판정 전용 모델 gemini-decision-1로 Threads 다이제스트 문지기 분류를 실측한 결과. 정확도 24/24, 응답 중앙값 657ms. 2026년 11월 12일 측정." />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+    <style>
+      button, [role="button"], select, summary { min-height: 2.25rem; }
+      :root {
+        --bg: #f4f6f5;
+        --surface: #ffffff;
+        --surface-2: #ecefee;
+        --ink: #17211d;
+        --ink-2: #4c5a54;
+        --ink-3: #7b8881;
+        --line: #d8dedb;
+        --accent: #0e7569;
+        --accent-ink: #ffffff;
+        --accent-soft: #dff0ec;
+        --amber: #b45309;
+        --amber-soft: #fdf0dd;
+        --bar-track: #e3e9e6;
+        --bar-other: #9db3ab;
+        --shadow: 0 1px 2px rgba(23, 33, 29, .06), 0 4px 14px rgba(23, 33, 29, .05);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #101613;
+          --surface: #1a211e;
+          --surface-2: #232c28;
+          --ink: #e8efec;
+          --ink-2: #aebbb5;
+          --ink-3: #7e8d86;
+          --line: #2f3a35;
+          --accent: #2fbfa6;
+          --accent-ink: #0b1512;
+          --accent-soft: #173630;
+          --amber: #e5a34c;
+          --amber-soft: #3a2c14;
+          --bar-track: #2a332f;
+          --bar-other: #5d7269;
+          --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+        line-height: 1.55;
+        font-size: 16px;
+      }
+      .wrap { max-width: 1060px; margin: 0 auto; padding: 28px 18px 56px; }
+      .num { font-variant-numeric: tabular-nums; }
+      .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+
+      /* ---------- header ---------- */
+      .eyebrow { font-size: 13px; font-weight: 700; color: var(--accent); margin: 0 0 6px; }
+      .intro h1 { font-size: 27px; line-height: 1.3; margin: 0 0 10px; letter-spacing: -.01em; }
+      .intro p { margin: 0; color: var(--ink-2); max-width: 74ch; }
+      .intro p + p { margin-top: 6px; }
+      .intro p b { color: var(--ink); }
+      .meta-line { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 14px; font-size: 13.5px; color: var(--ink-3); }
+      .meta-line b { color: var(--ink-2); font-weight: 600; }
+
+      /* ---------- sections ---------- */
+      section.card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        padding: 20px;
+        margin-top: 18px;
+      }
+      section.card > h2 { font-size: 17px; margin: 0 0 4px; }
+      section.card > .desc { margin: 0 0 14px; font-size: 14px; color: var(--ink-2); }
+      section.card > .desc b { color: var(--ink); }
+
+      /* ---------- stats ---------- */
+      .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 4px 0 6px; }
+      .stat { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--bg); }
+      .stat .v { font-size: 21px; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; }
+      .stat .v small { font-size: 13px; font-weight: 700; color: var(--ink-2); }
+      .stat .k { font-size: 12.5px; color: var(--ink-2); margin-top: 2px; }
+
+      /* ---------- questions ---------- */
+      .q-list { display: grid; gap: 12px; }
+      .q-item { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: var(--bg); }
+      .q-item h3 { margin: 0 0 6px; font-size: 15.5px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+      .tag { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--accent); font-weight: 700; font-size: 13.5px; }
+      .q-item p { margin: 0; font-size: 14px; color: var(--ink-2); }
+      .q-item .en {
+        margin: 10px 0 0; padding: 10px 12px; border-radius: 8px;
+        background: var(--surface-2); font-size: 13px; line-height: 1.6;
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        word-break: break-word; color: var(--ink);
+      }
+      .q-item .en .lbl { color: var(--ink-3); }
+      .q-item ul { margin: 8px 0 0; padding-left: 18px; font-size: 14px; color: var(--ink-2); }
+      .q-item ul li + li { margin-top: 3px; }
+      .q-item ul b { color: var(--ink); }
+
+      /* ---------- plot ---------- */
+      .plot { margin: 6px 0 4px; }
+      .plot-row { display: grid; grid-template-columns: 118px 1fr 68px; align-items: center; gap: 10px; margin: 8px 0; }
+      .plot-row .plabel { font-size: 13.5px; font-weight: 600; text-align: right; }
+      .plot-row .prange { font-size: 12.5px; color: var(--ink-3); font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; white-space: nowrap; }
+      .plot-track { position: relative; height: 26px; background: var(--bar-track); border-radius: 5px; }
+      .plot-track .mid { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--ink-3); opacity: .55; }
+      .plot-dot { position: absolute; top: 50%; width: 13px; height: 13px; border-radius: 50%; transform: translate(-50%, -50%); border: 2px solid var(--surface); }
+      .plot-dot.inc { background: var(--accent); }
+      .plot-dot.exc { background: var(--bar-other); }
+      .plot-dot.hot { background: var(--amber); width: 16px; height: 16px; z-index: 2; }
+      .plot-axis { display: grid; grid-template-columns: 118px 1fr 68px; gap: 10px; font-size: 12px; color: var(--ink-3); }
+      .plot-axis .ticks { display: flex; justify-content: space-between; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+      .plot-note { font-size: 13.5px; color: var(--ink-2); margin-top: 10px; }
+
+      .takeaways { margin: 14px 0 0; padding-left: 18px; font-size: 14px; color: var(--ink-2); }
+      .takeaways li + li { margin-top: 5px; }
+      .takeaways b { color: var(--ink); }
+
+      /* ---------- spotlight ---------- */
+      .spotlight { border: 1px solid var(--amber); background: var(--amber-soft); border-radius: 10px; padding: 14px 16px; margin-top: 14px; }
+      .spotlight h3 { margin: 0 0 4px; font-size: 15px; color: var(--amber); }
+      .spotlight p { margin: 0; font-size: 14.5px; }
+      .spotlight .quote { font-weight: 600; }
+      .spotlight .why { color: var(--ink-2); font-size: 13.5px; margin-top: 4px; }
+
+      /* ---------- baseline strip ---------- */
+      .mini-table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+      .mini-table th, .mini-table td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+      .mini-table th { font-size: 13px; color: var(--ink-2); font-weight: 600; }
+      .mini-table tr:last-child td { border-bottom: none; }
+      .mini-table td.num, .mini-table th.num { text-align: right; white-space: nowrap; }
+      .footnote { font-size: 13px; color: var(--ink-3); margin-top: 10px; }
+
+      /* ---------- rows table ---------- */
+      .filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 2px 0 12px; }
+      .filters button {
+        font: inherit; cursor: pointer; border-radius: 999px;
+        border: 1px solid var(--line); background: var(--bg); color: var(--ink-2);
+        padding: 7px 16px; font-size: 14px; font-weight: 600; min-height: 2.25rem;
+      }
+      .filters button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+      .rows-table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+      .rows-table th, .rows-table td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+      .rows-table th { font-size: 13px; color: var(--ink-2); font-weight: 600; }
+      .rows-table tr:last-child td { border-bottom: none; }
+      .rows-table td.num, .rows-table th.num { text-align: right; white-space: nowrap; }
+      .rows-table tr.hot-row td { background: var(--amber-soft); }
+      .pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+      .pill.inc { background: var(--accent-soft); color: var(--accent); }
+      .pill.exc { background: var(--surface-2); color: var(--ink-2); }
+      .rows-count { font-size: 13px; color: var(--ink-3); margin-top: 10px; }
+
+      footer { margin-top: 22px; font-size: 13px; color: var(--ink-3); text-align: center; line-height: 1.7; }
+
+      @media (max-width: 720px) {
+        .wrap { padding: 20px 13px 44px; }
+        section.card { padding: 16px; }
+        .intro h1 { font-size: 22px; }
+        .stat-grid { grid-template-columns: 1fr 1fr; }
+        .plot-row { grid-template-columns: 84px 1fr 60px; gap: 7px; }
+        .plot-row .prange { font-size: 11.5px; }
+        .plot-axis { grid-template-columns: 84px 1fr 60px; gap: 7px; }
+        /* wide table -> stacked rows */
+        .rows-table, .rows-table tbody, .rows-table tr, .rows-table td { display: block; width: 100%; }
+        .rows-table thead { display: none; }
+        .rows-table tr { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; background: var(--bg); }
+        .rows-table td { border-bottom: none; padding: 2px 0; }
+        .rows-table td.num { text-align: left; }
+        .rows-table td::before { content: attr(data-lbl); display: inline-block; min-width: 52px; font-size: 12px; font-weight: 700; color: var(--ink-3); margin-right: 6px; }
+        .rows-table td.text-cell::before { display: block; margin-bottom: 2px; }
+        .mini-table th, .mini-table td { padding: 8px 6px; font-size: 13.5px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * { transition: none !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+
+      <div class="intro">
+        <p class="eyebrow">판정 전용 모델 실측 리포트</p>
+        <h1>Gemini 실측 결과 — 문지기 필터 24건</h1>
+        <p>구글의 판정 전용 모델 <b>gemini-decision-1</b>(2026년 11월 11일 출시, Decisions API)에 실제 분류 작업을 돌려본 측정 기록입니다. 작업은 <b>문지기 필터</b> — 매일 Threads 다이제스트를 만들 때 새 글 중 AI·개발 글만 통과시키고 일상 글은 걸러내는 첫 단계 — 를 본뜬 것입니다. 지금은 큰 언어 모델이 하는 이 판단을, 빠르고 값싼 판정 전용 모델로 바꿀 수 있는지를 본 결과입니다.</p>
+        <p>판정 전용 모델은 글을 쓰지 않고 <b>판단만 확률로</b> 돌려줍니다. 글 1건을 넣고 정해진 형식의 질문 3개를 한 번에 던지면, 포함 여부·분류·가치 점수가 확률과 함께 돌아옵니다.</p>
+        <div class="meta-line">
+          <span>모델 <b class="mono">gemini-decision-1</b></span>
+          <span>실행일 <b>2026년 11월 12일</b></span>
+          <span>실행 환경 <b>무료 티어 (Decisions API, v1beta)</b></span>
+          <span>데이터 <b>예시 문장 24건 (포함 12 · 제외 12)</b></span>
+        </div>
+      </div>
+
+      <!-- 핵심 결과 -->
+      <section class="card">
+        <h2>핵심 결과</h2>
+        <p class="desc">글 1건마다 질문 3개(포함 여부 · 분류 · 가치 점수)를 한 번의 호출로 물었습니다. 데이터는 실제 개인 글이 아니라, 공개 글 패턴을 본뜬 예시 문장입니다.</p>
+        <div class="stat-grid">
+          <div class="stat"><div class="v num">24/24 <small>(100%)</small></div><div class="k">포함/제외 판정 정확도 · 세부 분류도 24건 전부 일치</div></div>
+          <div class="stat"><div class="v num">657<small>ms</small></div><div class="k">호출당 응답 시간 중앙값 (평균 641ms, 질문 3개 동시)</div></div>
+          <div class="stat"><div class="v num">7,462</div><div class="k">24건 합계 입력 토큰 (건당 약 311) · 출력 토큰 0</div></div>
+          <div class="stat"><div class="v num">약 $0.0007</div><div class="k">24건 전체를 유료 단가로 환산한 값 · 실제 호출은 무료 티어</div></div>
+        </div>
+        <ul class="takeaways">
+          <li><b>확률 분리가 뚜렷합니다.</b> 포함 글은 "그렇다"일 확률 0.90~0.99, 제외 글은 대부분 0.01이었습니다. 판정 경계(0.5) 근처에 걸린 글은 하나도 없었습니다.</li>
+          <li><b>가치 점수 분포도 갈렸습니다.</b> 제외 글은 0단계 확률 0.95~0.97에 집중되고 포함 글은 1~2단계에 분포해, 다이제스트 가치 판단에도 쓸 만한 형태입니다.</li>
+          <li><b>주식 글(10번)은 '기타'로</b> 정확히 분류됐습니다. 단순 개발/일상 이분법이 아닌 3분류에서도 흔들리지 않았습니다.</li>
+        </ul>
+        <div class="spotlight">
+          <h3>가장 애매했던 한 건 — 8번</h3>
+          <p><span class="quote">“반려묘가 오늘도 제 키보드 위에서 잡니다. 일할 수가 없어요.”</span> · P(yes) <b class="num">0.1931</b></p>
+          <p class="why">제외 글 12건 중 유일하게 확률이 0.01대에서 크게 벗어난 글입니다(나머지는 0.0100~0.0130). '키보드'라는 단어 때문에 개발 글 쪽으로 살짝 끌린 것으로 보이며, 그래도 판정 경계 0.5에는 한참 못 미쳐 제외 판정은 유지됐습니다.</p>
+        </div>
+      </section>
+
+      <!-- 테스트 질문 -->
+      <section class="card">
+        <h2>테스트 질문 3개</h2>
+        <p class="desc">글 1건을 넣으면 아래 3개 질문을 한 번의 호출로 함께 던지고, 답을 확률로 받습니다. 영문 원문이 실제로 보낸 질문 그대로입니다.</p>
+        <div class="q-list">
+          <div class="q-item">
+            <h3>질문 1 · 포함 여부 <span class="tag">noul</span></h3>
+            <p>이 글이 AI 또는 소프트웨어 개발에 관한 글인가를 예/아니오 확률로 묻습니다. 확률 0.5 이상이면 포함으로 판정했습니다.</p>
+            <p class="en"><span class="lbl">instructions —</span> Is this post about AI or software development - model or API news, developer tools, tutorials, coding experience, agent frameworks, or developer community updates?</p>
+          </div>
+          <div class="q-item">
+            <h3>질문 2 · 분류 <span class="tag">choice</span></h3>
+            <p>이 글에 가장 맞는 분류를 3개 선택지 중에서 고르게 하고, 선택지별 확률과 최종 선택을 받습니다.</p>
+            <p class="en"><span class="lbl">instructions —</span> Which category fits this post best?</p>
+            <ul>
+              <li><b>ai_dev (AI·개발)</b> — AI or software development news, tutorial, tool, or experience.</li>
+              <li><b>daily_life (일상)</b> — Personal daily life: food, travel, family, exercise, pets, weather.</li>
+              <li><b>other (기타)</b> — Anything else, such as finance, general news, or promotions.</li>
+            </ul>
+          </div>
+          <div class="q-item">
+            <h3>질문 3 · 가치 점수 <span class="tag">score</span></h3>
+            <p>AI/개발자 뉴스 다이제스트에 넣을 가치가 얼마나 되는지를 0~2단계로 매기고, 단계별 확률을 받습니다.</p>
+            <p class="en"><span class="lbl">instructions —</span> How valuable is this post for an AI/developer news digest?</p>
+            <ul>
+              <li><b>0단계</b> — No value for the digest. (가치 없음)</li>
+              <li><b>1단계</b> — Some reference value for developers. (참고할 수준)</li>
+              <li><b>2단계</b> — Key news or insight developers should know. (개발자가 꼭 알아야 할 핵심 소식)</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 확률 분포 -->
+      <section class="card">
+        <h2>건별 확률 분포</h2>
+        <p class="desc">점 하나가 글 1건의 "AI/개발 글이다" 확률(P(yes))입니다.</p>
+        <div class="plot" id="gemini-plot" role="img" aria-label="포함 글 12건은 확률 0.90에서 0.99 사이에, 제외 글 12건은 0.01에서 0.19 사이에 분포합니다."></div>
+        <p class="plot-note">포함 글은 0.90 이상에, 제외 글은 0.01 근처에 몰려 분리가 뚜렷합니다. 주황색 점은 가장 애매했던 8번(키보드 위에서 자는 고양이, 0.1931)입니다.</p>
+      </section>
+
+      <!-- 기준값 참고 -->
+      <section class="card">
+        <h2>같은 모델의 다른 실측 — 짧은 질문과의 차이</h2>
+        <p class="desc">같은 날, 같은 모델에 단순한 기본 문장으로 잰 값입니다. 위 24건 테스트와 질문 문장이 달라 결과가 어떻게 달라지는지 보여줍니다.</p>
+        <table class="mini-table">
+          <thead>
+            <tr><th>측정</th><th class="num">값</th><th class="num">응답 시간</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>문지기 질문(짧은 문장) — 일상 글에 대한 P(yes), 낮을수록 좋음</td><td class="num">0.0290</td><td class="num">약 530~640ms</td></tr>
+            <tr><td>배송 문의 분류 — 정답 카테고리(delivery) 확률, 높을수록 좋음</td><td class="num">0.9994</td><td class="num">약 530~640ms</td></tr>
+          </tbody>
+        </table>
+        <p class="footnote">※ 문지기 값 0.0290은 짧은 질문 문장("Is this text about AI or software development?")으로 3회 반복해도 동일하게 나온 값입니다. 위 24건 테스트처럼 질문을 길게 구체화하면 제외 글이 대부분 0.01로 떨어졌습니다 — 질문 문장의 구체성이 결과에 크게 작용합니다.</p>
+      </section>
+
+      <!-- 건별 결과 -->
+      <section class="card">
+        <h2>건별 결과 24건</h2>
+        <p class="desc">정답 라벨은 사람이 미리 붙인 기준값이고, P(yes)는 질문 1에 대한 모델의 답입니다. 분류는 질문 2의 최종 선택입니다.</p>
+        <div class="filters" role="group" aria-label="결과 필터">
+          <button type="button" data-filter="all" aria-pressed="true">전체 24건</button>
+          <button type="button" data-filter="include" aria-pressed="false">포함 12건</button>
+          <button type="button" data-filter="exclude" aria-pressed="false">제외 12건</button>
+        </div>
+        <table class="rows-table">
+          <thead>
+            <tr><th class="num">#</th><th>문장</th><th>정답</th><th class="num">P(yes)</th><th>분류</th><th class="num">응답</th></tr>
+          </thead>
+          <tbody id="gemini-rows"></tbody>
+        </table>
+        <p class="rows-count" id="rows-count"></p>
+      </section>
+
+      <!-- 해석 시 주의 -->
+      <section class="card">
+        <h2>해석 시 주의</h2>
+        <ul class="takeaways" style="margin-top:0;">
+          <li><b>예시 문장은 경계가 뚜렷해서 100%가 나왔습니다.</b> 실제 Threads 글은 개발 이야기와 사담이 한 글에 섞인 경우가 많아, 실전 정확도는 이보다 낮게 보는 게 맞습니다.</li>
+          <li><b>다음 검증은 실제 수집 글</b>에 사람이 직접 라벨을 붙인 데이터로 진행할 예정이며, 그 결과가 이 모델의 진짜 성능입니다.</li>
+          <li><b>비용·한도:</b> 유료 단가는 입력 100만 토큰당 $0.10, 출력 $0입니다. 무료 티어는 분당 200회 · 하루 10,000회까지 쓸 수 있어, 다이제스트 수십 건 규모에서는 충분합니다.</li>
+          <li><b>속도 해석:</b> 응답 시간은 측정 서버에서 잰 값으로, 호출 1건에 질문 3개가 함께 들어간 수치입니다. 다이제스트 수십 건을 처리해도 1분 안에 끝나는 수준입니다.</li>
+        </ul>
+      </section>
+
+      <footer>
+        gemini-decision-1 · Decisions API 실측 기록 (2026년 11월 12일)<br />
+        테스트 데이터는 공개 글 패턴을 본뜬 예시 문장이며, 실제 개인 글이 아닙니다.
+      </footer>
+    </div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        /* 실측 데이터 (2026-11-12, gemini-decision-1) */
+        var RESULTS = [
+          { id: 1, label: "include", p: 0.9881, cat: "ai_dev", ms: 675, text: "구글이 Gemini 4 Carbon을 정식 출시했습니다. 1M 컨텍스트에 API 가격도 공개됐네요. 개발자 입장에서 정리해봤습니다." },
+          { id: 2, label: "exclude", p: 0.0100, cat: "daily_life", ms: 610, text: "오늘 점심은 회사 근처에서 제육볶음 먹었어요. 여기 반찬이 진짜 맛있네요." },
+          { id: 3, label: "include", p: 0.9862, cat: "ai_dev", ms: 844, text: "Claude Code로 레거시 코드를 리팩터링해봤는데, 세션을 나눠서 돌리니까 컨텍스트 오염이 훨씬 덜하네요. 방법 공유합니다." },
+          { id: 4, label: "exclude", p: 0.0100, cat: "daily_life", ms: 875, text: "주말에 가족들이랑 강릉 다녀왔어요. 바다가 너무 예뻤던 하루." },
+          { id: 5, label: "include", p: 0.9846, cat: "ai_dev", ms: 822, text: "FastAPI에서 백그라운드 작업을 Celery 없이 처리하는 패턴을 정리했습니다. 실무에서 바로 쓸 수 있는 코드 예시 포함." },
+          { id: 6, label: "exclude", p: 0.0100, cat: "daily_life", ms: 731, text: "아침 러닝 5km 완료. 페이스가 조금씩 좋아지고 있어요." },
+          { id: 7, label: "include", p: 0.9841, cat: "ai_dev", ms: 683, text: "새로 나온 에이전트 프레임워크 써봤는데 도구 호출 안정성이 확실히 좋아졌어요. 기존 워크플로랑 비교 글 올립니다." },
+          { id: 8, label: "exclude", p: 0.1931, cat: "daily_life", ms: 755, text: "반려묘가 오늘도 제 키보드 위에서 잡니다. 일할 수가 없어요." },
+          { id: 9, label: "include", p: 0.9900, cat: "ai_dev", ms: 532, text: "OpenAI가 새 API 요금제를 발표했습니다. 캐시 입력 가격이 10분의 1이라 분류 작업 비용이 확 줄겠네요." },
+          { id: 10, label: "exclude", p: 0.0100, cat: "other", ms: 654, text: "오늘 주식 시장이 많이 흔들렸네요. 포트폴리오 점검 중입니다." },
+          { id: 11, label: "include", p: 0.9674, cat: "ai_dev", ms: 722, text: "LLM 평가 지표를 직접 만들어본 후기. 정확도만 보다가 보정 오차까지 보니 결과가 완전 달라지네요." },
+          { id: 12, label: "exclude", p: 0.0100, cat: "daily_life", ms: 413, text: "새로 산 원두로 내린 커피가 너무 맛있어서 하루가 행복합니다." },
+          { id: 13, label: "include", p: 0.9642, cat: "ai_dev", ms: 768, text: "Gemini 신기능 튜토리얼: 긴 문서를 넣고 질문별로 나눠 처리하는 법을 단계별로 정리했어요." },
+          { id: 14, label: "exclude", p: 0.0130, cat: "daily_life", ms: 763, text: "오늘은 부모님 모시고 건강검진 다녀왔어요. 결과는 다행히 양호합니다." },
+          { id: 15, label: "include", p: 0.9017, cat: "ai_dev", ms: 454, text: "해커톤에서 만든 AI 일정 비서가 입상했습니다. 심사위원 피드백이랑 데모 링크 공유합니다." },
+          { id: 16, label: "exclude", p: 0.0100, cat: "daily_life", ms: 525, text: "이사 준비 중인데 짐 정리가 끝이 없네요. 버릴 게 산더미입니다." },
+          { id: 17, label: "include", p: 0.9766, cat: "ai_dev", ms: 518, text: "벡터 DB 인덱싱 전략 비교 글. 청크 크기에 따라 검색 품질이 어떻게 달라지는지 실측 데이터로 보여드립니다." },
+          { id: 18, label: "exclude", p: 0.0100, cat: "daily_life", ms: 431, text: "퇴근하고 동네 단골집에서 방어회 먹고 왔어요. 겨울 방어 최고입니다." },
+          { id: 19, label: "include", p: 0.9836, cat: "ai_dev", ms: 521, text: "AI 코딩 도구 쓰면서 느낀 점: 자동완성보다 코드 리뷰 자동화가 훨씬 임팩트가 크네요." },
+          { id: 20, label: "exclude", p: 0.0100, cat: "daily_life", ms: 460, text: "오늘 날씨가 좋아서 한강 산책 다녀왔습니다. 노을이 정말 예쁘네요." },
+          { id: 21, label: "include", p: 0.9497, cat: "ai_dev", ms: 641, text: "논문 요약: 작은 결정 전용 모델이 대형 LLM보다 분류 정확도와 속도에서 앞선다는 결과가 나왔습니다." },
+          { id: 22, label: "exclude", p: 0.0100, cat: "daily_life", ms: 660, text: "아이 학원 상담 다녀왔어요. 커리큘럼이 생각보다 알차네요." },
+          { id: 23, label: "include", p: 0.9809, cat: "ai_dev", ms: 689, text: "MCP 서버를 직접 만들어서 사내 도구에 연결했습니다. 구축 과정이랑 막혔던 부분 정리했어요." },
+          { id: 24, label: "exclude", p: 0.0100, cat: "daily_life", ms: 640, text: "주말 농구 동호회 경기 뛰고 왔습니다. 오랜만에 운동하니 개운하네요." }
+        ];
+
+        function esc(s) {
+          return String(s).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+          });
+        }
+
+        /* ---------- 확률 분포 도트 플롯 ---------- */
+        var plot = document.getElementById("gemini-plot");
+        (function renderPlot() {
+          var groups = [
+            { key: "include", name: "포함 글 (정답)", cls: "inc" },
+            { key: "exclude", name: "제외 글 (정답)", cls: "exc" }
+          ];
+          var html = "";
+          for (var g = 0; g < groups.length; g++) {
+            var rows = RESULTS.filter(function (r) { return r.label === groups[g].key; });
+            var ps = rows.map(function (r) { return r.p; });
+            var min = Math.min.apply(null, ps), max = Math.max.apply(null, ps);
+            html += '<div class="plot-row"><span class="plabel">' + groups[g].name + " " + rows.length + '건</span><div class="plot-track"><span class="mid"></span>';
+            for (var i = 0; i < rows.length; i++) {
+              var hot = rows[i].id === 8;
+              html += '<span class="plot-dot ' + (hot ? "hot" : groups[g].cls) + '" style="left:' + (rows[i].p * 100).toFixed(1) + '%" title="' + rows[i].id + "번 · P(yes) " + rows[i].p.toFixed(4) + '"></span>';
+            }
+            html += '</div><span class="prange">' + min.toFixed(2) + "~" + max.toFixed(2) + "</span></div>";
+          }
+          html += '<div class="plot-axis"><span></span><span class="ticks"><span>0</span><span>0.5 (판정 경계)</span><span>1.0</span></span><span></span></div>';
+          plot.innerHTML = html;
+        })();
+
+        /* ---------- 건별 표 + 필터 ---------- */
+        var tbody = document.getElementById("gemini-rows");
+        var countEl = document.getElementById("rows-count");
+        var catName = { ai_dev: "AI·개발", daily_life: "일상", other: "기타" };
+
+        function renderRows(filter) {
+          var shown = RESULTS.filter(function (r) { return filter === "all" || r.label === filter; });
+          var html = "";
+          for (var i = 0; i < shown.length; i++) {
+            var r = shown[i];
+            var inc = r.label === "include";
+            html += '<tr' + (r.id === 8 ? ' class="hot-row"' : "") + ">" +
+              '<td class="num" data-lbl="#">' + r.id + "</td>" +
+              '<td class="text-cell" data-lbl="문장">' + esc(r.text) + "</td>" +
+              '<td data-lbl="정답"><span class="pill ' + (inc ? "inc" : "exc") + '">' + (inc ? "포함" : "제외") + "</span></td>" +
+              '<td class="num" data-lbl="P(yes)">' + r.p.toFixed(4) + "</td>" +
+              '<td data-lbl="분류">' + (catName[r.cat] || r.cat) + "</td>" +
+              '<td class="num" data-lbl="응답">' + r.ms + "ms</td></tr>";
+          }
+          tbody.innerHTML = html;
+          countEl.textContent = shown.length + "건 표시 중 · 24건 모두 정답 라벨과 일치";
+        }
+
+        var filterBtns = document.querySelectorAll(".filters button");
+        for (var b = 0; b < filterBtns.length; b++) {
+          filterBtns[b].addEventListener("click", function () {
+            for (var j = 0; j < filterBtns.length; j++) filterBtns[j].setAttribute("aria-pressed", "false");
+            this.setAttribute("aria-pressed", "true");
+            renderRows(this.getAttribute("data-filter"));
+          });
+        }
+        renderRows("all");
+      })();
+    </script>
+  </body>
+</html>
